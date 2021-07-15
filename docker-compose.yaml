@@ -1,0 +1,47 @@
+version: '2.4'
+
+networks:
+  default:
+
+services:
+  influxdb:
+    image: influxdb:alpine
+    restart: always
+    networks:
+      - default
+    ports:
+      - 8086:8086
+    environment:
+      - INFLUXDB_DB=forza
+    mem_limit: 256m
+    cpus: 2
+    healthcheck:
+      test: ["CMD", "busybox", "wget", "--spider", "-q", "http://localhost:8086/health"]
+      interval: 3s
+      timeout: 10s
+      retries: 3
+
+  grafana:
+    image: grafana/grafana:latest
+    restart: always
+    depends_on:
+      influxdb:
+        condition: service_started
+    dns: 8.8.8.8
+    networks:
+      - default
+    ports:
+      - 3000:3000
+    environment:
+      - GF_AUTH_ANONYMOUS_ORG_ROLE=Editor
+      - GF_AUTH_ANONYMOUS_ENABLED=true
+      - GF_AUTH_BASIC_ENABLED=false
+    #volumes:
+    #  - ./grafana:/etc/grafana/provisioning/
+    mem_limit: 256m
+    cpus: 2
+    healthcheck:
+      test: ["CMD", "busybox", "wget", "--spider", "-q", "http://localhost:3000/api/health"]
+      interval: 3s
+      timeout: 10s
+      retries: 3

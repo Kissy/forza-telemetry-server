@@ -1,0 +1,6 @@
+testing/*
+*.csv
+fdt
+.DS_Store
+.idea
+*.iml
